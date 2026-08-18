@@ -444,6 +444,38 @@ Deliverables produced:
 - `docs/module-02-completion-report.md`
 - `docs/module-02-quality-audit.md` (quality gate)
 
-When instructed to execute Module 3, follow the module-specific execution document.
+Module 3 — System Architecture & AI Strategy
 
-Do not begin Module 3 until Module 2 has been reviewed and explicitly approved.
+Status: **COMPLETE**
+
+Architecture style: Hybrid Pipeline with Selective AI (Architecture D)
+
+AI technology placements: LLM=CORE, Document Intelligence=CORE, HITL=CORE, RAG=IMPORTANT, VLM=IMPORTANT, Agents=OPTIONAL, Knowledge Graph=NOT REQUIRED
+
+Deliverables produced:
+- `docs/module-03-architecture.md`
+- `docs/system-context.md`
+- `docs/container-architecture.md`
+- `docs/ai-pipeline.md`
+- `docs/rag-strategy.md`
+- `docs/agent-strategy.md`
+- `docs/knowledge-graph-strategy.md`
+- `docs/validation-architecture.md`
+- `docs/human-in-the-loop.md`
+- `docs/scalability.md`
+- `docs/security-and-trust.md`
+- `docs/observability.md`
+- `docs/technology-evaluation.md`
+- `docs/adr/ADR-001-architecture-style.md`
+- `docs/adr/ADR-002-ai-orchestration-strategy.md`
+- `docs/adr/ADR-003-provenance-first-data-flow.md`
+- `docs/adr/ADR-004-validation-strategy.md`
+- `docs/adr/ADR-005-human-review-boundaries.md`
+- `docs/adr/ADR-006-rag-scope.md`
+- `docs/adr/ADR-007-knowledge-graph.md`
+- `docs/adr/ADR-008-agent-decision.md`
+- `docs/module-03-completion-report.md`
+
+When instructed to execute Module 4, follow the module-specific execution document.
+
+Do not begin Module 4 until Module 3 has been reviewed and explicitly approved.
