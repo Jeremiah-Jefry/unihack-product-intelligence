@@ -1,0 +1,510 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://unihack-product-intelligence/schemas/product-intelligence-v1.json",
+  "title": "Product Intelligence Record",
+  "description": "Canonical schema for an industrial product intelligence record. This is the domain contract that all later implementation components must respect.",
+  "type": "object",
+  "required": ["id", "mpn", "brand", "lifecycle_status", "primary_category", "category_confidence", "manufacturer_name", "record"],
+  "properties": {
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "System-generated unique identifier"
+    },
+    "mpn": {
+      "type": "string",
+      "description": "Manufacturer Part Number — primary external identifier"
+    },
+    "brand": {
+      "type": "string",
+      "description": "Manufacturer or brand name"
+    },
+    "name": {
+      "type": "string",
+      "description": "Descriptive product name"
+    },
+    "model": {
+      "type": "string",
+      "description": "Model or series reference"
+    },
+    "lifecycle_status": {
+      "type": "string",
+      "enum": ["active", "discontinued", "obsolete", "unknown"],
+      "description": "Current lifecycle status of the product"
+    },
+    "primary_category": {
+      "type": "string",
+      "description": "Internal category path (e.g., 'Mounted Bearings > Pillow Block')"
+    },
+    "category_confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Confidence in category assignment"
+    },
+    "taxonomy_codes": {
+      "type": "object",
+      "description": "External taxonomy codes",
+      "properties": {
+        "ETIM": { "type": "string" },
+        "UNSPSC": { "type": "string" },
+        "eCl@ss": { "type": "string" },
+        "GS1_GPC": { "type": "string" }
+      },
+      "additionalProperties": { "type": "string" }
+    },
+    "manufacturer_name": {
+      "type": "string",
+      "description": "Official manufacturer name"
+    },
+    "manufacturer_id": {
+      "type": "string",
+      "description": "Internal manufacturer identifier"
+    },
+    "short_description": {
+      "type": "string",
+      "description": "Brief product description (1-2 sentences)"
+    },
+    "long_description": {
+      "type": "string",
+      "description": "Detailed product description"
+    },
+    "record": {
+      "$ref": "#/$defs/ProductRecord"
+    },
+    "relationships": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/ProductRelationship" },
+      "description": "Relationships to other products"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the record was created"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the record was last modified"
+    },
+    "version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Record version (incremented on change)"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Overall confidence in the record (derived from attribute-level confidence scores)"
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["pending", "validated", "partially_validated", "rejected"],
+      "description": "Overall validation status of the product record"
+    },
+    "review_status": {
+      "type": "string",
+      "enum": ["not_required", "pending_review", "under_review", "approved", "rejected"],
+      "description": "Overall human review status of the product record"
+    },
+    "last_verified_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "When the record was last human-verified"
+    }
+  },
+  "$defs": {
+    "ProductRecord": {
+      "type": "object",
+      "required": ["attributes", "quality_metrics", "created_at", "updated_at", "version"],
+      "properties": {
+        "attributes": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Attribute" },
+          "description": "All known attributes for this product"
+        },
+        "conflicts": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Conflict" },
+          "description": "All unresolved conflicts"
+        },
+        "quality_metrics": {
+          "$ref": "#/$defs/QualityMetrics"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "Attribute": {
+      "type": "object",
+      "required": ["id", "product_id", "name", "domain", "value_type", "information_category", "candidates", "confidence", "validation_status", "lifecycle_state", "requires_review", "conflict_status", "extracted_at"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "product_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "description": "Canonical attribute name (e.g., 'bore_diameter')"
+        },
+        "domain": {
+          "type": "string",
+          "enum": ["identity", "classification", "specification", "physical", "performance", "electrical", "mechanical", "environmental", "certification", "commercial", "compatibility", "description", "media"],
+          "description": "Which domain this attribute belongs to"
+        },
+        "value_type": {
+          "type": "string",
+          "enum": ["string", "number", "boolean", "enum", "range", "measurement", "dimension", "percentage", "date", "duration", "compound", "list"],
+          "description": "The type of value"
+        },
+        "value": {
+          "description": "The current/selected value (type depends on value_type)"
+        },
+        "original_value": {
+          "description": "The original value before normalization (when different from current)"
+        },
+        "unit": {
+          "type": "string",
+          "description": "Unit of measurement (when applicable)"
+        },
+        "normalized_value": {
+          "description": "Canonical representation (when normalization was applied)"
+        },
+        "normalized_unit": {
+          "type": "string",
+          "description": "Canonical unit (when normalization was applied)"
+        },
+        "missing_status": {
+          "type": "string",
+          "enum": ["NOT_PROVIDED", "NOT_APPLICABLE", "NOT_DISCOVERED", "CONFLICTING", "PENDING_REVIEW", "NOT_VERIFIABLE"],
+          "description": "Why the value is missing (when value is null)"
+        },
+        "information_category": {
+          "type": "string",
+          "enum": ["identity", "specification", "classification", "certification", "safety", "commercial", "physical", "compatibility", "description", "media"],
+          "description": "What type of information this represents"
+        },
+        "information_category_detail": {
+          "type": "string",
+          "description": "Specific subcategory (e.g., 'electrical_safety')"
+        },
+        "candidates": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/CandidateValue" },
+          "minItems": 1,
+          "description": "All candidate values from different sources"
+        },
+        "selected_candidate_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Which candidate is currently selected (null if unresolved)"
+        },
+        "conflict_status": {
+          "type": "string",
+          "enum": ["none", "pending_resolution", "resolved", "permanently_conflicting"],
+          "description": "Conflict state"
+        },
+        "conflict": {
+          "$ref": "#/$defs/Conflict",
+          "description": "Conflict details (when conflict_status is not 'none')"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How trustworthy this value is"
+        },
+        "validation_status": {
+          "type": "string",
+          "enum": ["pending", "auto_validated", "human_validated", "rejected"],
+          "description": "Whether the value has passed validation"
+        },
+        "lifecycle_state": {
+          "type": "string",
+          "enum": ["discovered", "extracted", "normalized", "enriched", "validated", "reviewed", "approved", "rejected"],
+          "description": "Current state in the attribute lifecycle"
+        },
+        "requires_review": {
+          "type": "boolean",
+          "description": "Whether this attribute needs human review"
+        },
+        "review_reason": {
+          "type": "string",
+          "description": "Why review is needed"
+        },
+        "extracted_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When the value was first extracted"
+        },
+        "last_validated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "last_reviewed_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "expires_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "When this value needs re-verification"
+        },
+        "notes": {
+          "type": "string"
+        }
+      }
+    },
+    "CandidateValue": {
+      "type": "object",
+      "required": ["id", "attribute_id", "value", "source_id", "source_location", "extraction_method", "extraction_confidence", "source_trust_score", "freshness", "extracted_at"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "attribute_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "value": {
+          "description": "The extracted/obtained value"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "source_id": {
+          "type": "string",
+          "format": "uuid",
+          "description": "Reference to SourceDocument"
+        },
+        "source_location": {
+          "$ref": "#/$defs/SourceLocation"
+        },
+        "extraction_method": {
+          "type": "string",
+          "enum": ["text_extraction", "ocr", "table_parsing", "web_scraping", "api_lookup", "manual_entry", "inference"],
+          "description": "How the value was obtained"
+        },
+        "extraction_confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How confident the extraction was"
+        },
+        "source_trust_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "How trustworthy this source is for this type of information"
+        },
+        "freshness": {
+          "$ref": "#/$defs/FreshnessInfo"
+        },
+        "extracted_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "transformations": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/Transformation" }
+        }
+      }
+    },
+    "SourceDocument": {
+      "type": "object",
+      "required": ["id", "name", "type", "location", "content_hash", "acquired_at", "trust_level", "product_references", "extraction_status"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable name (filename or URL)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["pdf", "csv", "excel", "web_page", "image", "scanned_document", "erp_export", "api_response"]
+        },
+        "location": {
+          "type": "string",
+          "description": "File path or URL"
+        },
+        "content_hash": {
+          "type": "string",
+          "description": "Hash of the document content (for change detection)"
+        },
+        "acquired_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "published_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "trust_level": {
+          "type": "string",
+          "enum": ["manufacturer_official", "authorized_distributor", "third_party_verified", "third_party_unverified", "unknown"]
+        },
+        "product_references": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "description": "Which products this document is about"
+        },
+        "extraction_status": {
+          "type": "string",
+          "enum": ["pending", "extracted", "partially_extracted", "failed"]
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "SourceLocation": {
+      "type": "object",
+      "properties": {
+        "page": { "type": "integer", "minimum": 1 },
+        "section": { "type": "string" },
+        "table_id": { "type": "string" },
+        "row": { "type": "integer", "minimum": 1 },
+        "column": { "type": "string" },
+        "text_span": { "type": "string", "description": "The exact text passage that was extracted" },
+        "image_region": { "$ref": "#/$defs/BoundingBox" },
+        "url_fragment": { "type": "string" }
+      }
+    },
+    "BoundingBox": {
+      "type": "object",
+      "required": ["x", "y", "width", "height", "image_id"],
+      "properties": {
+        "x": { "type": "integer", "minimum": 0 },
+        "y": { "type": "integer", "minimum": 0 },
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "image_id": { "type": "string" }
+      }
+    },
+    "Transformation": {
+      "type": "object",
+      "required": ["type", "description", "input_value", "output_value", "applied_at", "applied_by"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["unit_conversion", "terminology_mapping", "format_standardization", "value_correction", "derivation"]
+        },
+        "description": { "type": "string" },
+        "input_value": {},
+        "output_value": {},
+        "applied_at": { "type": "string", "format": "date-time" },
+        "applied_by": { "type": "string" }
+      }
+    },
+    "FreshnessInfo": {
+      "type": "object",
+      "required": ["freshness_status"],
+      "properties": {
+        "source_published_at": { "type": "string", "format": "date-time" },
+        "source_version": { "type": "string" },
+        "source_last_verified_at": { "type": "string", "format": "date-time" },
+        "freshness_status": {
+          "type": "string",
+          "enum": ["current", "outdated", "unknown", "requires_reverification"]
+        },
+        "freshness_reason": { "type": "string" }
+      }
+    },
+    "Resolution": {
+      "type": "object",
+      "required": ["method", "selected_candidate_id", "reason", "resolved_by", "resolved_at"],
+      "properties": {
+        "method": {
+          "type": "string",
+          "enum": ["source_priority", "confidence_based", "human_decision", "rule_based", "newest_wins"]
+        },
+        "selected_candidate_id": { "type": "string", "format": "uuid" },
+        "reason": { "type": "string" },
+        "resolved_by": { "type": "string" },
+        "resolved_at": { "type": "string", "format": "date-time" },
+        "rejection_candidates": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" }
+        }
+      }
+    },
+    "Conflict": {
+      "type": "object",
+      "required": ["id", "attribute_id", "candidate_ids", "conflict_type", "detected_at", "status"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "attribute_id": { "type": "string", "format": "uuid" },
+        "candidate_ids": {
+          "type": "array",
+          "items": { "type": "string", "format": "uuid" },
+          "minItems": 2
+        },
+        "conflict_type": {
+          "type": "string",
+          "enum": ["value_mismatch", "unit_mismatch", "source_contradiction", "stale_vs_current"]
+        },
+        "detected_at": { "type": "string", "format": "date-time" },
+        "status": {
+          "type": "string",
+          "enum": ["open", "investigating", "resolved", "permanently_conflicting"]
+        },
+        "resolution_id": { "type": "string", "format": "uuid" }
+      }
+    },
+    "QualityMetrics": {
+      "type": "object",
+      "required": ["completeness_score", "accuracy_score", "consistency_score", "freshness_score", "evidence_coverage", "validation_coverage", "conflict_count", "review_pending_count"],
+      "properties": {
+        "completeness_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "accuracy_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "consistency_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "freshness_score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "evidence_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+        "validation_coverage": { "type": "number", "minimum": 0, "maximum": 1 },
+        "conflict_count": { "type": "integer", "minimum": 0 },
+        "review_pending_count": { "type": "integer", "minimum": 0 },
+        "commerce_readiness": {
+          "type": "object",
+          "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+        }
+      }
+    },
+    "ProductRelationship": {
+      "type": "object",
+      "required": ["id", "source_product_id", "target_product_id", "relationship_type", "confidence", "validated"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "source_product_id": { "type": "string", "format": "uuid" },
+        "target_product_id": { "type": "string", "format": "uuid" },
+        "relationship_type": {
+          "type": "string",
+          "enum": ["replaces", "compatible_with", "accessory_of", "equivalent_to", "variant_of", "requires", "used_with", "supersedes"]
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "source_id": { "type": "string", "format": "uuid" },
+        "validated": { "type": "boolean" },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
