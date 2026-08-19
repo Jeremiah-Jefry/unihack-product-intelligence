@@ -14,14 +14,17 @@ class AppError(Exception):
 
 class NotFoundError(AppError):
     """Resource not found."""
+
     pass
 
 
 class ValidationError(AppError):
     """Input validation failed."""
+
     pass
 
 
 class DependencyError(AppError):
     """External dependency unavailable."""
+
     pass

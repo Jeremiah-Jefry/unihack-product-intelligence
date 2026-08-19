@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI):
 
     # Ensure data directories exist
     import os
+
     os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
     os.makedirs(settings.STORAGE_DIR, exist_ok=True)
 
@@ -41,14 +42,14 @@ app = FastAPI(
     redoc_url="/redoc" if settings.is_development else None,
 )
 
-# CORS — restricted for development, configurable for production
+# CORS — configured via environment, restricted for development
+_cors_origins = [settings.FRONTEND_URL]
+if settings.is_development:
+    _cors_origins.extend(["http://localhost:8501", "http://localhost:3000"])
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        settings.FRONTEND_URL,
-        "http://localhost:8501",
-        "http://localhost:3000",
-    ],
+    allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

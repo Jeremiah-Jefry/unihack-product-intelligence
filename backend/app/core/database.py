@@ -8,6 +8,7 @@ from app.core.config import settings
 
 class Base(DeclarativeBase):
     """Base class for all ORM models."""
+
     pass
 
 

@@ -10,9 +10,7 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
 from uuid import UUID, uuid4
-
 
 # --- Enums (from product-intelligence-schema.json) ---
 
@@ -150,34 +148,37 @@ class SourceType(enum.Enum):
 @dataclass
 class SourceLocation:
     """Precise location within a source document."""
-    page: Optional[int] = None
-    section: Optional[str] = None
-    table_id: Optional[str] = None
-    row: Optional[int] = None
-    column: Optional[str] = None
-    text_span: Optional[str] = None
+
+    page: int | None = None
+    section: str | None = None
+    table_id: str | None = None
+    row: int | None = None
+    column: str | None = None
+    text_span: str | None = None
 
 
 @dataclass
 class FreshnessInfo:
     """Source freshness tracking."""
+
     freshness_status: FreshnessStatus = FreshnessStatus.UNKNOWN
-    source_published_at: Optional[datetime] = None
-    source_version: Optional[str] = None
-    source_last_verified_at: Optional[datetime] = None
-    freshness_reason: Optional[str] = None
+    source_published_at: datetime | None = None
+    source_version: str | None = None
+    source_last_verified_at: datetime | None = None
+    freshness_reason: str | None = None
 
 
 @dataclass
 class SourceDocument:
     """A source document containing product information."""
+
     id: UUID = field(default_factory=uuid4)
     name: str = ""
     type: SourceType = SourceType.PDF
     location: str = ""
     content_hash: str = ""
     acquired_at: datetime = field(default_factory=datetime.utcnow)
-    published_at: Optional[datetime] = None
+    published_at: datetime | None = None
     trust_level: SourceTrustLevel = SourceTrustLevel.UNKNOWN
     extraction_status: str = "pending"
     metadata: dict[str, str] = field(default_factory=dict)
@@ -186,10 +187,11 @@ class SourceDocument:
 @dataclass
 class CandidateValue:
     """A candidate value extracted from a specific source."""
+
     id: UUID = field(default_factory=uuid4)
     attribute_id: UUID = field(default_factory=uuid4)
-    value: Optional[str] = None
-    unit: Optional[str] = None
+    value: str | None = None
+    unit: str | None = None
     source_id: UUID = field(default_factory=uuid4)
     source_location: SourceLocation = field(default_factory=SourceLocation)
     extraction_method: ExtractionMethod = ExtractionMethod.TEXT_EXTRACTION
@@ -202,30 +204,32 @@ class CandidateValue:
 @dataclass
 class ProductAttribute:
     """A single attribute of a product with full provenance."""
+
     id: UUID = field(default_factory=uuid4)
     product_id: UUID = field(default_factory=uuid4)
     name: str = ""
     domain: AttributeDomain = AttributeDomain.SPECIFICATION
     value_type: ValueType = ValueType.STRING
-    value: Optional[str] = None
-    original_value: Optional[str] = None
-    unit: Optional[str] = None
-    missing_status: Optional[str] = None
+    value: str | None = None
+    original_value: str | None = None
+    unit: str | None = None
+    missing_status: str | None = None
     information_category: InformationCategory = InformationCategory.SPECIFICATION
     candidates: list[CandidateValue] = field(default_factory=list)
-    selected_candidate_id: Optional[UUID] = None
+    selected_candidate_id: UUID | None = None
     conflict_status: ConflictStatus = ConflictStatus.NONE
     confidence: float = 0.0
     validation_status: ValidationStatus = ValidationStatus.PENDING
     lifecycle_state: LifecycleState = LifecycleState.DISCOVERED
     requires_review: bool = False
-    review_reason: Optional[str] = None
+    review_reason: str | None = None
     extracted_at: datetime = field(default_factory=datetime.utcnow)
 
 
 @dataclass
 class QualityMetrics:
     """Quality scores for a product record."""
+
     completeness_score: float = 0.0
     accuracy_score: float = 0.0
     consistency_score: float = 0.0
@@ -239,18 +243,19 @@ class QualityMetrics:
 @dataclass
 class Product:
     """Core product entity."""
+
     id: UUID = field(default_factory=uuid4)
     mpn: str = ""
     brand: str = ""
-    name: Optional[str] = None
-    model: Optional[str] = None
+    name: str | None = None
+    model: str | None = None
     lifecycle_status: LifecycleStatus = LifecycleStatus.UNKNOWN
     primary_category: str = ""
     category_confidence: float = 0.0
     manufacturer_name: str = ""
-    manufacturer_id: Optional[str] = None
-    short_description: Optional[str] = None
-    long_description: Optional[str] = None
+    manufacturer_id: str | None = None
+    short_description: str | None = None
+    long_description: str | None = None
     confidence: float = 0.0
     validation_status: str = "pending"
     review_status: str = "not_required"

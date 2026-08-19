@@ -1,8 +1,8 @@
 """Health and readiness check endpoints."""
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from sqlalchemy import text
 from sqlalchemy.orm import Session
 
@@ -19,12 +19,12 @@ async def health_check():
         status="ok",
         service="product-intelligence-api",
         version="0.1.0",
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
 
 
 @router.get("/ready", response_model=ReadyResponse)
-async def readiness_check(db: Session = Depends(get_db)):
+async def readiness_check(response: Response, db: Session = Depends(get_db)):
     """Readiness check — confirms dependencies are available."""
     db_status = "ok"
     try:
@@ -32,10 +32,14 @@ async def readiness_check(db: Session = Depends(get_db)):
     except Exception:
         db_status = "unavailable"
 
-    status = "ready" if db_status == "ok" else "not_ready"
+    is_ready = db_status == "ok"
+    status = "ready" if is_ready else "not_ready"
+
+    if not is_ready:
+        response.status_code = 503
 
     return ReadyResponse(
         status=status,
         database=db_status,
-        timestamp=datetime.now(timezone.utc),
+        timestamp=datetime.now(UTC),
     )
